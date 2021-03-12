@@ -2,6 +2,7 @@ from __future__ import print_function
 import os.path
 import buildDatabase
 import base64
+import time
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
@@ -43,11 +44,13 @@ def main():
     messages = results.get('messages', [])
     count = 1
     success = 0
+    dbHandler = buildDatabase.DatabaseHandler()
     for message in messages:
-        print("Working on message " + count + "...")
+        print("Working on message " + str(count) + "...")
+        count += 1
         key = message.get('id')
         results = service.users().messages().get(userId='me', id=key).execute()
-        msg = []
+        msg = {}
         # Email Information
         msg['labelIds'] = results.get('labelIds')
         msg['date'] = results.get('internalDate')
@@ -56,13 +59,18 @@ def main():
         msg['from'] = get_header(headers, 'From')
         msg['to'] = get_header(headers, 'To')
         msg['subject'] = get_header(headers, 'Subject')
-        msg['body'] = base64.b64decode(results.get('payload').get('body').get('data'))
+        if results.get('payload').get('body').get('data') != None:
+            msg['body'] = base64.b64decode(results.get('payload').get('body').get('data'))
+        else:
+            msg['body'] = "Text could not be read"
+            success -= 1
         # Upload to the database
         print("Information interpretted:")
         print(msg)
         print("Uploading to database...")
-        success += buildDatabase.insert(msg)
-    print("Messages stored: " + success)
+        success += dbHandler.insert(msg)
+        time.sleep(5)
+    print("Messages stored: " + str(success))
 
 def get_header(headers, name):
     for header in headers:
