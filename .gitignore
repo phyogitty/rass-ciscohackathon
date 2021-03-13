@@ -3,5 +3,5 @@
 *.log
 
 # Excluded Files
-.idea
-.DS_Store
+.idea/
+.DS_Store/
