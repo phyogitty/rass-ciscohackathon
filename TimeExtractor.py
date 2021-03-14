@@ -1,6 +1,7 @@
 import re
 import csv
-from datetime import datetime
+from datetime import datetime as dt
+import datetime
 
 # need: current date in (tomorrow, next week)
 # Look for day of the week separately
@@ -27,8 +28,8 @@ class TimeExtractor:
 				'sep', 'oct', 'nov', 'dec']
 	
 	# creates list in order of [month(0),date(1),year(2),hour,minute)
-	now = datetime.today().strftime("%m-%d-%y-%H-%M")
-	nowsplit = now.split('-')
+	now = dt.today()
+	nowsplit = now.strftime("%m-%d-%y-%H-%M").split('-')
 	nowsplit = [int(i) for i in nowsplit] 
 	nowsplit[2] = 2000 + nowsplit[2]
 	
@@ -72,12 +73,12 @@ class TimeExtractor:
 				self.exDate = int(foundlist[1])
 				if len(foundlist)>2:
 					if int(foundList[2])<self.nowsplit[2]:
-						invalidDate = 1		# if year is in the past, email probably isn't a scheduling mail
+						self.invalidDate = 1		# if year is in the past, email probably isn't a scheduling mail
 					else: 					
 						self.exYear = int(foundlist[2])
 						
-				newDateTime = self.formatDate()	
-				return newDateTime
+				self.newDateTime = self.formatDate()	
+				return self.newDateTime
 			
 			
 			# if month is found, look for other date information 
@@ -90,7 +91,7 @@ class TimeExtractor:
 				
 				found = re.search("[^0-9][1-3]?[0-9][^0-9]", bodypostmonth)
 				if found==None:
-					invalidDate = 1		# just month and no date is invalid
+					self.invalidDate = 1		# just month and no date is invalid
 					return None
 				found = found.group(0)
 				self.exMonth = foundmonth
@@ -100,13 +101,13 @@ class TimeExtractor:
 				if found!=None:
 					found = found.group(0)
 					if int(found)<self.nowsplit[2]:
-						invalidDate = 1
+						self.invalidDate = 1
 						return None
 					else:
 						self.exYear = int(found)
 						
-				newDateTime = self.formatDate()
-				return newDateTime
+				self.newDateTime = self.formatDate()
+				return self.newDateTime
 			
 			
 			# conventionally formatted date has not been found
@@ -116,21 +117,21 @@ class TimeExtractor:
 			if found!=None:
 				found = found.group(0)
 				if found=="tomorrow":
-					newDateTime = self.now+timedelta(days=1)
+					self.newDateTime = self.now+timedelta(days=1)
 				elif found=="next week":
-					newDateTime = self.now+timedelta(weeks=1)
-				return newDateTime
+					self.newDateTime = self.now+timedelta(weeks=1)
+				return self.fixTime(self.newDateTime)
 			
 			# next weekday
 			found = re.search("next (mon|tue|wed|thur|fri|sat|sun)", mailbody)
 			if found!=None:
 				found = found.group(0)
 				thisweekday = self.now.weekday()
-				foundweekday = weekdays.index(found)
+				foundweekday = self.weekdays.index(found[5:])
 				
 				nextweekdaydelta = 7+(foundweekday-thisweekday)
-				newDateTime = self.now+timedelta(days=nextweekdaydelta)
-				return newDateTime
+				self.newDateTime = self.now+datetime.timedelta(days=nextweekdaydelta)
+				return self.fixTime(self.newDateTime)
 				
 			# today?
 			if len(self.exTime)==0:
@@ -149,9 +150,16 @@ class TimeExtractor:
 		elif self.exYear==0 and self.invalidDate==0:
 			self.exYear = self.nowsplit[2]
 		
-		return datetime(self.exYear, self.exMonth, self.exDate, self.exTime[0], self.exTime[1], 0, 0)
+		return dt(self.exYear, self.exMonth, self.exDate, self.exTime[0], self.exTime[1], 0, 0)
 		
+	def fixTime(self, datetimevar):
+		temp = datetimevar.strftime("%m-%d-%y-%H-%M").split('-')
+		temp = [int(i) for i in temp] 
+		temp[2] = 2000 + temp[2]
+		temp[3] = self.exTime[0]
+		temp[4] = self.exTime[1]
 		
+		return dt(temp[2], temp[0], temp[1], temp[3], temp[4], 0, 0)
 				
 				
 test = TimeExtractor("filtered_mail.csv")
