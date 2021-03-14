@@ -23,13 +23,14 @@ from datetime import datetime
 class TimeExtractor:
 	
 	weekdays = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
-	months = [	'jan' , 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug'
+	months = [	'jan' , 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug',
 				'sep', 'oct', 'nov', 'dec']
 	
 	# creates list in order of [month(0),date(1),year(2),hour,minute)
 	now = datetime.today().strftime("%m-%d-%y-%H-%M")
 	nowsplit = now.split('-')
 	nowsplit = [int(i) for i in nowsplit] 
+	nowsplit[2] = 2000 + nowsplit[2]
 	
 	# extracted information
 	exTime = []
@@ -58,7 +59,7 @@ class TimeExtractor:
 				found = found.group(0)
 				self.exTime = found.split(':')
 				self.exTime = [int(i) for i in self.exTime] 
-				if re.search("(p.m.|pm)$", mailbody) and self.exTime[0]<12:
+				if re.search("(p.m.|pm)", mailbody) and self.exTime[0]<12:	# assuming only one time in email
 					self.exTime[0] = self.exTime[0]+12
 			
 			
@@ -83,18 +84,19 @@ class TimeExtractor:
 			found = re.search("(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)", mailbody)
 			if found!=None: 
 				found = found.group(0)
-				print(found)
-				foundmonth = self.months.index(found)+2		# don't set month until date has been found ############ why +2?? i dunno.
+				foundmonth = self.months.index(found)+1		
 				
-				found = re.search("[^0-9][1-3]?[0-9]", mailbody)
+				bodypostmonth = mailbody[mailbody.find(found):]  #temp[temp.find("Jan"):]
+				
+				found = re.search("[^0-9][1-3]?[0-9][^0-9]", bodypostmonth)
 				if found==None:
 					invalidDate = 1		# just month and no date is invalid
 					return None
 				found = found.group(0)
 				self.exMonth = foundmonth
-				self.exDate = int(found[1:])
+				self.exDate = int(found[1:len(found)-1])
 				
-				found = re.search("(20)[2-9][0-9]", mailbody)
+				found = re.search("(20)[0-9][0-9]", mailbody)
 				if found!=None:
 					found = found.group(0)
 					if int(found)<self.nowsplit[2]:
@@ -134,7 +136,7 @@ class TimeExtractor:
 			if len(self.exTime)==0:
 				return None
 			else:
-				self.exYear = 2000 + self.nowsplit[2]
+				self.exYear = self.nowsplit[2]
 				self.exMonth = self.nowsplit[0]
 				self.exDate = self.nowsplit[1]
 			
@@ -145,13 +147,12 @@ class TimeExtractor:
 		if (self.invalidDate==1):
 			return None
 		elif self.exYear==0 and self.invalidDate==0:
-			self.exYear = 2000 + self.nowsplit[2]
+			self.exYear = self.nowsplit[2]
 		
 		return datetime(self.exYear, self.exMonth, self.exDate, self.exTime[0], self.exTime[1], 0, 0)
 		
 		
 				
 				
-	
 test = TimeExtractor("filtered_mail.csv")
 print(test.extractTime())
