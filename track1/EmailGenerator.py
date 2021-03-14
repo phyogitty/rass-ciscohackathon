@@ -8,7 +8,10 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-
+import import_ipynb
+import sys
+sys.path.append('../')
+import track3.run_model as track3
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
@@ -44,16 +47,19 @@ def main():
     db_handler = EmailDatabase.DatabaseHandler()
     parser = EmailParser.EmailParser()
     for message in messages:
-        print("Working on message " + str(count) + "...")
+        print("\n- Working on message " + str(count) + "...")
         count += 1
         key = message.get('id')
         results = service.users().messages().get(userId='me', id=key, format='full').execute()
         msg = parser.read_message(results)
         # Upload to the database
-        print("Information interpreted:")
+        print("- Information interpreted:")
         print(msg)
-        print("Uploading to database...")
+        print("- Uploading to database...")
         success += db_handler.insert(msg)
+        print("- Classifying usefulness")
+        print("- Is Useful?", track3.predict_usefulness(msg['body']))
+        print("..............")
         time.sleep(5)
     print("Messages stored: " + str(success))
     print("Proceeding to fetch from database to filter through emails...")
