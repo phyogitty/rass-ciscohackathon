@@ -2,8 +2,9 @@
 
 from ics import Calendar, Event, Todo
 import json
-from datetime import  datetime, timedelta
+from datetime import datetime, timedelta
 from dateutil import tz
+
 class CalendarConversion():
     def __init__(self):
         #states.json is an example json file

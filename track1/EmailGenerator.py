@@ -1,17 +1,17 @@
 from __future__ import print_function
 import os.path
-import EmailDatabase
-import EmailParser
-import base64
+from . import EmailDatabase
+from . import EmailParser
+# import base64
 import time
 from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
-import import_ipynb
+# import import_ipynb
 import sys
 sys.path.append('../')
-import track3.run_model as track3
+# from .. import track3.run_model as track3
 # If modifying these scopes, delete the file token.json.
 SCOPES = ['https://www.googleapis.com/auth/gmail.readonly']
 
@@ -57,12 +57,13 @@ def main():
         print(msg)
         print("- Uploading to database...")
         success += db_handler.insert(msg)
-        print("- Classifying usefulness")
-        print("- Is Useful?", track3.predict_usefulness(msg['body']))
+        # print("- Classifying usefulness")
+        # print("- Is Useful?", track3.predict_usefulness(msg['body']))
         print("..............")
         time.sleep(5)
     print("Messages stored: " + str(success))
     print("Proceeding to fetch from database to filter through emails...")
+    return db_handler
 
 
 def get_header(headers, name):

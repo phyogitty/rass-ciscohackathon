@@ -1,7 +1,12 @@
 # Excluded Extensions
-*.json
 *.log
+*.db
 
-# Excluded Files
+# Excluded Folders
 .idea/
 .DS_Store/
+pycache/
+
+# Excluded Files
+credentials.json
+token.json

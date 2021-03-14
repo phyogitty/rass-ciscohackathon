@@ -1,11 +1,10 @@
 import sqlite3
-import mysql.connector
 
 # TODO: Write proper documentation
 class DatabaseHandler:
 
     def __init__(self):
-        self.index = 0
+        self.index = 1
         self.conn = sqlite3.connect('rass.db')
         self.cur = self.conn.cursor()
         self.cur.execute("""
@@ -40,7 +39,7 @@ class DatabaseHandler:
         self.cur.execute("""
         INSERT INTO emails (label_ids, date, fro, recv, subject, body)
         VALUES (?,?,?,?,?,?)
-        """, (labs, dat, fro, recv, subj, bod));
+        """, (labs, dat, fro, recv, subj, bod))
         self.conn.commit()
         return self.cur.rowcount
 
@@ -52,7 +51,7 @@ class DatabaseHandler:
         :return: A dictionary with a single row's information
         """
         results = {}
-        for row in self.cur.execute("SELECT * FROM emails WHERE rowid = ? limit 1", self.index):
+        for row in self.cur.execute("SELECT * FROM emails WHERE rowid = ? limit 1", [self.index]):
             results['id'] = row[0]
             results['label'] = row[1]
             results['date'] = row[2]
