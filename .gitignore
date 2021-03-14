@@ -1,0 +1,7 @@
+# Excluded Extensions
+*.json
+*.log
+
+# Excluded Files
+.idea/
+.DS_Store/
