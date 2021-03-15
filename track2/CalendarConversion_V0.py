@@ -8,8 +8,8 @@ from dateutil import tz
 class CalendarConversion():
     def __init__(self):
         #states.json is an example json file
-        with open('states.json') as f:
-            self.JsonData = json.load(f)
+        # with open('states.json') as f:
+        #     self.JsonData = json.load(f)
         self.convertToICS()
 
     def convertToICS(self):

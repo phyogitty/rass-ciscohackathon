@@ -47,22 +47,22 @@ def main():
     db_handler = EmailDatabase.DatabaseHandler()
     parser = EmailParser.EmailParser()
     for message in messages:
-        print("\n- Working on message " + str(count) + "...")
+        # print("\n- Working on message " + str(count) + "...")
         count += 1
         key = message.get('id')
         results = service.users().messages().get(userId='me', id=key, format='full').execute()
         msg = parser.read_message(results)
         # Upload to the database
-        print("- Information interpreted:")
-        print(msg)
-        print("- Uploading to database...")
+        # print("- Information interpreted:")
+        # print(msg)
+        # print("- Uploading to database...")
         success += db_handler.insert(msg)
         # print("- Classifying usefulness")
         # print("- Is Useful?", track3.predict_usefulness(msg['body']))
-        print("..............")
+        # print("..............")
         time.sleep(5)
     print("Messages stored: " + str(success))
-    print("Proceeding to fetch from database to filter through emails...")
+    print("Proceeding to fetch from database to filter through emails...\n")
     return db_handler
 
 
